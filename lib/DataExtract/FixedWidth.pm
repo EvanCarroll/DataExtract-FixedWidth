@@ -6,7 +6,7 @@ use feature ':5.10';
 use Moose;
 use Carp;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 has 'unpack_string' => (
 	isa          => 'Str'
@@ -43,7 +43,7 @@ has 'first_col_zero' => (
 has 'fix_overlay' => (
 	isa       => 'Bool'
 	, is      => 'ro'
-	, default => 1
+	, default => 0
 );
 
 has 'trim_whitespace' => (
@@ -157,7 +157,7 @@ sub parse {
 
 	## Get rid of whitespaces
 	if ( $self->trim_whitespace ) {
-		@cols = map {s/^\s+|\s+$//g; $_ } @cols;
+		for ( @cols ) { s/^\s+//; s/\s+$//; }
 	}
 	
 	if ( $self->null_as_undef ) {
@@ -223,9 +223,9 @@ In the above example, this module can discern the column names from the header. 
 	});
 
 After you have constructed, you can C<-E<gt>parse> which will return an ArrayRef
-	$de->parse('FOOBARBAZ THIS IS TEXT    ANOTHER COL');
+	C<$de-E<gt>parse('FOOBARBAZ THIS IS TEXT    ANOTHER COL');>
 
-Or, you can use ->parse_hash() which returns a HashRef of the data indexed by the column header
+Or, you can use C<-E<gt>parse_hash()> which returns a HashRef of the data indexed by the column header
 
 
 =head1 DESCRIPTION
@@ -263,7 +263,7 @@ So if ColumnA as is 'foob' and ColumnB is 'ar Hello world'
 
 * ColumnA becomes 'foobar', and ColumnB becomes 'Hello world'
 
-=item ->null_as_undef
+=item ->null_as_undef(1/0)
 
 Simply undef all elements that return C<length(element) = 0>
 
@@ -291,7 +291,7 @@ under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-	Evan Carroll C<< <me at evancarroll.com> >>
+	Evan Carroll <me at evancarroll.com>
 	System Lord of the Internets
 
 =head1 BUGS
