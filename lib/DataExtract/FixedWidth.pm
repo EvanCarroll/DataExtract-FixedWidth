@@ -1,12 +1,12 @@
 package DataExtract::FixedWidth;
-use strict;
-use warnings;
-use feature ':5.10';
-
 use Moose;
+##
+## Fix is to use BrowserUK's code for the heuristic from data
+## 
+## 
 use Carp;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 has 'unpack_string' => (
 	isa          => 'Str'
@@ -31,7 +31,6 @@ has 'header_row' => (
 	isa         => 'Str'
 	, is        => 'rw'
 	, predicate => 'has_header_row'
-	, required  => 1
 );
 
 has 'first_col_zero' => (
@@ -65,6 +64,13 @@ has 'null_as_undef' => (
 	, default => 0
 );
 
+has 'heuristic' => (
+	isa          => 'ArrayRef'
+	, is         => 'rw'
+	, predicate  => 'has_heuristic'
+	, auto_deref => 1
+);
+
 sub _build_cols {
 	my $self = shift;
 	return [ split ' ', $self->header_row ]
@@ -72,8 +78,8 @@ sub _build_cols {
 
 sub _build_colchar_map {
 	my $self = shift;
-
-	croak "Can not render unpack string without the header_row"
+	
+	croak 'Can not render the map of columns to start-chars without the header_row'
 		unless $self->has_header_row
 	;
 
@@ -116,22 +122,34 @@ sub _build_colchar_map {
 sub _build_unpack_string {
 	my $self = shift;
 
-	my $ccm = $self->colchar_map;
-
-	my @widths = $self->sorted_colstart;
-
-	$widths[0] = 0 if $self->first_col_zero;
 	my @unpack;
-	foreach my $idx ( 0 .. $#widths ) {
-		
-		if ( exists $widths[$idx+1] ) {
-			push @unpack, 'a' . ( $widths[$idx+1] - $widths[$idx] );
-		}
-		else {
-			push @unpack, 'A*'
-		}
 	
+	if ( $self->has_heuristic ) {
+		my @lines = $self->heuristic;
+	
+		my $mask = ' ' x length $lines[ 0 ];
+		$mask |= $_ for @lines;
+		
+		push @unpack, 'a' . length($1)
+			while $mask =~ m/(\S+\s*+|$)/g
+		;
+
 	}
+	else {
+		my @startcols = $self->sorted_colstart;
+		$startcols[0] = 0 if $self->first_col_zero;
+		foreach my $idx ( 0 .. $#startcols ) {
+			
+			if ( exists $startcols[$idx+1] ) {
+				push @unpack, 'a' . ( $startcols[$idx+1] - $startcols[$idx] );
+			}
+			else {
+				push @unpack, 'A*'
+			}
+		
+		}
+	}
+	
 
 	join '', @unpack;
 
@@ -139,6 +157,10 @@ sub _build_unpack_string {
 
 sub parse {
 	my ( $self, $data ) = @_;
+	
+	return undef
+		unless defined $data
+	;
 
 	my @cols = unpack ( $self->unpack_string, $data );
 
@@ -161,7 +183,10 @@ sub parse {
 	}
 	
 	if ( $self->null_as_undef ) {
-		@cols = map { length($_) ? $_ : undef } @cols;
+		croak 'This ->null_as_undef option mandates ->trim_whitespace be true'
+			unless $self->trim_whitespace
+		;
+		for ( @cols ) { undef $_ unless length($_) }
 	}
 
 	\@cols;
@@ -173,7 +198,7 @@ sub parse_hash {
 
 	my @data = @{ $self->parse( $data ) };
 	my $colstarts = $self->sorted_colstart;
-
+	
 	my $results;
 	foreach my $idx ( 0 .. $#data ) {
 		my $col = $self->colchar_map->{ $colstarts->[$idx] };
@@ -187,13 +212,13 @@ sub parse_hash {
 sub _build_sorted_colstart {
 	my $self = shift;
 
-	my @widths = map { $_->[0] }
+	my @startcols = map { $_->[0] }
 		sort { $a->[1] <=> $b->[1] }
 		map { [$_, sprintf( "%10d", $_ ) ] }
 		keys %{ $self->colchar_map }
 	;
 
-	\@widths;
+	\@startcols;
 
 }
 
@@ -231,6 +256,26 @@ Or, you can use C<-E<gt>parse_hash()> which returns a HashRef of the data indexe
 =head1 DESCRIPTION
 
 This module parses any type of fixed width table -- these types of tables are often outputed by ghostscript, printf() displays with string padding (i.e. %-20s %20s etc), and most screen capture mechanisms.
+
+=head2 Constructor
+
+The class constructor -- C<-E<gt>new> -- provides numerious features. Some options it has are:
+
+=over 12
+
+=item heuristics => \@lines
+
+This will deduce the unpack format string from data. If you opt to use this method parse_hash will be unavailble to you.
+
+=item cols => \@cols
+
+This will permit you to explicitly list the columns in the header row. This is especially handy if you have spaces in the column header. This option will make the C<header_string> mandatory.
+
+=item header_string => $string
+
+If a C<cols> option is not provided the assumption is that there are no spaces in the column header. The module can take care of the rest. The only way this column can be avoided is if we deduce the header from heuristics, or if you explicitly supply the unpack string and only use C<-E<gt>parse($line)>
+
+=back
 
 =head2 Methods
 

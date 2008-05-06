@@ -14,7 +14,7 @@ inc/Module/Install/WriteAll.pm
 lib/DataExtract/FixedWidth.pm
 Makefile
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
 MANIFEST.bak
 MANIFEST.SKIP
 META.yml
@@ -24,6 +24,8 @@ t/01-Wikipedia.t
 t/02-RusselAdams-Snap.t
 t/03-Nulls.t
 t/04-Fix-Overlay.t
+t/05-BrowserUK.t
+t/06-Jhourcle.nott
 t/boilerplate.t
 t/pod-coverage.t
 t/pod.t

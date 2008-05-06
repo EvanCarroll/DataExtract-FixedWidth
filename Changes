@@ -1,5 +1,9 @@
 Revision history for DataExtract-FixedWidth
 
+0.03    Speed fixes
+        Pods fixes
+				And, heuristics in the constructor
+
 0.02    Speed fix per uri's suggestion
         Fixed pod
 				Fixed default for ->fix_overlay
