@@ -18,9 +18,9 @@
 #     NO_META => q[1]
 #     PL_FILES => {  }
 #     PREREQ_PM => { Test::More=>q[0], ExtUtils::MakeMaker=>q[6.42], Moose=>q[0] }
-#     VERSION => q[0.03]
+#     VERSION => q[0.04]
 #     dist => { PREOP=>q[$(PERL) -I. "-MModule::Install::Admin" -e "dist_preop(q($(DISTVNAME)))"] }
-#     test => { TESTS=>q[t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/boilerplate.t t/pod-coverage.t t/pod.t] }
+#     test => { TESTS=>q[t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/06-BadConstructor.t t/boilerplate.t t/pod-coverage.t t/pod.t] }
 
 # --- MakeMaker post_initialize section:
 
@@ -60,11 +60,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = DataExtract::FixedWidth
 NAME_SYM = DataExtract_FixedWidth
-VERSION = 0.03
+VERSION = 0.04
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_03
+VERSION_SYM = 0_04
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.03
+XS_VERSION = 0.04
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -185,10 +185,13 @@ PERL_ARCHIVE       =
 PERL_ARCHIVE_AFTER = 
 
 
-TO_INST_PM = lib/DataExtract/FixedWidth.pm
+TO_INST_PM = lib/DataExtract/.FixedWidth.pm.swp \
+	lib/DataExtract/FixedWidth.pm
 
 PM_TO_BLIB = lib/DataExtract/FixedWidth.pm \
-	blib/lib/DataExtract/FixedWidth.pm
+	blib/lib/DataExtract/FixedWidth.pm \
+	lib/DataExtract/.FixedWidth.pm.swp \
+	blib/lib/DataExtract/.FixedWidth.pm.swp
 
 
 # --- MakeMaker platform_constants section:
@@ -255,7 +258,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = DataExtract-FixedWidth
-DISTVNAME = DataExtract-FixedWidth-0.03
+DISTVNAME = DataExtract-FixedWidth-0.04
 
 
 # --- MakeMaker macro section:
@@ -737,7 +740,7 @@ $(MAKE_APERL_FILE) : $(FIRST_MAKEFILE) pm_to_blib
 TEST_VERBOSE=0
 TEST_TYPE=test_$(LINKTYPE)
 TEST_FILE = test.pl
-TEST_FILES = t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/boilerplate.t t/pod-coverage.t t/pod.t
+TEST_FILES = t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/06-BadConstructor.t t/boilerplate.t t/pod-coverage.t t/pod.t
 TESTDB_SW = -d
 
 testdb :: testdb_$(LINKTYPE)
@@ -763,7 +766,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,03,0,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,04,0,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>The one stop shop for parsing static column width text tables!</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Evan &lt;me@evancarroll.com&gt;</AUTHOR>' >> $(DISTNAME).ppd
@@ -782,7 +785,8 @@ ppd :
 
 pm_to_blib : $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', '\''$(PM_FILTER)'\'')' -- \
-	  lib/DataExtract/FixedWidth.pm blib/lib/DataExtract/FixedWidth.pm 
+	  lib/DataExtract/FixedWidth.pm blib/lib/DataExtract/FixedWidth.pm \
+	  lib/DataExtract/.FixedWidth.pm.swp blib/lib/DataExtract/.FixedWidth.pm.swp 
 	$(NOECHO) $(TOUCH) pm_to_blib
 
 

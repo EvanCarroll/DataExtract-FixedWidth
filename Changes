@@ -1,8 +1,11 @@
 Revision history for DataExtract-FixedWidth
 
+0.04    Better pod -- almost a complete overhaul
+        Constructor tests
+
 0.03    Speed fixes
         Pods fixes
-				And, heuristics in the constructor
+				And, BrowserUK's heuristic algo in the constructor by opt in
 
 0.02    Speed fix per uri's suggestion
         Fixed pod

@@ -1,12 +1,20 @@
 package DataExtract::FixedWidth;
 use Moose;
-##
-## Fix is to use BrowserUK's code for the heuristic from data
-## 
-## 
 use Carp;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
+
+sub BUILD {
+	my $self = shift;
+
+	confess 'You must either send either a "header_row" or data for "heuristic"'
+		unless $self->has_header_row || $self->has_heuristic
+	;
+	confess 'You must send a "header_row" if you send "cols"'
+		if $self->has_cols && !$self->has_header_row
+	;
+
+}
 
 has 'unpack_string' => (
 	isa          => 'Str'
@@ -78,7 +86,7 @@ sub _build_cols {
 
 sub _build_colchar_map {
 	my $self = shift;
-	
+
 	croak 'Can not render the map of columns to start-chars without the header_row'
 		unless $self->has_header_row
 	;
@@ -88,7 +96,7 @@ sub _build_colchar_map {
 
 		my $pos = 0;
 		$pos = index( $self->header_row, $col, $pos );
-				
+
 		croak "Failed to find a column '$col' in the header row"
 			unless defined $pos
 		;
@@ -102,19 +110,19 @@ sub _build_colchar_map {
 
 			until ( not exists $ccm->{$pos} ) {
 				$pos = index( $self->header_row, $col, $pos+1 );
-				
+
 				croak "Failed to find another column '$col' in the header row"
 					unless defined $pos
 				;
 
 			}
-			
+
 			$ccm->{ $pos } = $col;
 
 		}
 
 	}
-	
+
 	$ccm;
 
 }
@@ -123,13 +131,13 @@ sub _build_unpack_string {
 	my $self = shift;
 
 	my @unpack;
-	
+
 	if ( $self->has_heuristic ) {
 		my @lines = $self->heuristic;
-	
+
 		my $mask = ' ' x length $lines[ 0 ];
 		$mask |= $_ for @lines;
-		
+
 		push @unpack, 'a' . length($1)
 			while $mask =~ m/(\S+\s*+|$)/g
 		;
@@ -139,17 +147,17 @@ sub _build_unpack_string {
 		my @startcols = $self->sorted_colstart;
 		$startcols[0] = 0 if $self->first_col_zero;
 		foreach my $idx ( 0 .. $#startcols ) {
-			
+
 			if ( exists $startcols[$idx+1] ) {
 				push @unpack, 'a' . ( $startcols[$idx+1] - $startcols[$idx] );
 			}
 			else {
 				push @unpack, 'A*'
 			}
-		
+
 		}
 	}
-	
+
 
 	join '', @unpack;
 
@@ -157,7 +165,7 @@ sub _build_unpack_string {
 
 sub parse {
 	my ( $self, $data ) = @_;
-	
+
 	return undef
 		unless defined $data
 	;
@@ -181,7 +189,7 @@ sub parse {
 	if ( $self->trim_whitespace ) {
 		for ( @cols ) { s/^\s+//; s/\s+$//; }
 	}
-	
+
 	if ( $self->null_as_undef ) {
 		croak 'This ->null_as_undef option mandates ->trim_whitespace be true'
 			unless $self->trim_whitespace
@@ -198,7 +206,7 @@ sub parse_hash {
 
 	my @data = @{ $self->parse( $data ) };
 	my $colstarts = $self->sorted_colstart;
-	
+
 	my $results;
 	foreach my $idx ( 0 .. $#data ) {
 		my $col = $self->colchar_map->{ $colstarts->[$idx] };
@@ -232,28 +240,40 @@ DataExtract::FixedWidth - The one stop shop for parsing static column width text
 
 =head1 SYNOPSIS
 
-	SAMPLE FILE
-	HEADER:  'COL1NAME  COL2NAME       COL3NAMEEEEE'
-	DATA1:   'FOOBARBAZ THIS IS TEXT      ANHER COL'
-	DATA2:   'FOOBAR FOOBAR IS TEXT    ANOTHER COL'
-
-In the above example, this module can discern the column names from the header. It will then parse out DATA1 and DATA2 appropriatly. If the column bleeds into another column you can use the option C<-E<gt>fix_overlay(1)>
-
-
+	## We assume the columns have no spaces in the header.	
 	my $de = DataExtract::FixedWidth->new({
-		header_row => 'COL1NAME  COL2NAME       COL3NAMEEEEE'
-		## You can optionally be explicit about the column names
-		## This is required if your column names have spaces
-		cols       => [qw/COL1NAME COL2NAME COL3NAMEEEEE/]
+		header_row => $header_row
 	});
 
-After you have constructed, you can C<-E<gt>parse> which will return an ArrayRef
-	C<$de-E<gt>parse('FOOBARBAZ THIS IS TEXT    ANOTHER COL');>
+	## We explicitly tell what column names to pick out of the header.
+	my $de = DataExtract::FixedWidth->new({
+		header_row => $header_row
+		cols       => [qw/COL1NAME COL2NAME COL3NAME/, 'COL WITH SPACE IN NAME']
+	});
 
-Or, you can use C<-E<gt>parse_hash()> which returns a HashRef of the data indexed by the column header
+	## We supply data to heuristically determine header. Here we assume no header.
+	## And C<-E<gt>parse_hash> is not available to you
+	my $de = DataExtract::FixedWidth->new({
+		heuristic => \@datarows
+	});
 
+	$de->parse( $data_row );
+
+	$de->parse_hash( $data_row );
 
 =head1 DESCRIPTION
+
+In the below example, this module can discern the column names from the header. Or, you can supply them explicitly in the constructor; or, you can supply the data rows in an ArrayRef to heuristic and pray for the best luck.
+
+	SAMPLE FILE
+	HEADER:  'COL1NAME       COL2NAME       COL3NAMEEEEE'
+	DATA1:   'FOOBARBAZ      THIS IS TEXT   ANHER COL   '
+	DATA2:   'FOOBAR FOOBAR  IS TEXT        ANOTHER COL '
+
+After you have constructed, you can C<-E<gt>parse> which will return an ArrayRef
+	$de->parse('FOOBARBAZ THIS IS TEXT    ANOTHER COL');
+
+Or, you can use C<-E<gt>parse_hash()> which returns a HashRef of the data indexed by the column header
 
 This module parses any type of fixed width table -- these types of tables are often outputed by ghostscript, printf() displays with string padding (i.e. %-20s %20s etc), and most screen capture mechanisms.
 
@@ -287,7 +307,7 @@ Parses the data and returns an ArrayRef
 
 =item ->parse_hash( $data_line )
 
-Parses the data and returns a HashRef
+Parses the data and returns a HashRef, indexed by the I<cols> (headers)
 
 =item ->first_col_zero(1/0)
 
@@ -310,7 +330,7 @@ So if ColumnA as is 'foob' and ColumnB is 'ar Hello world'
 
 =item ->null_as_undef(1/0)
 
-Simply undef all elements that return C<length(element) = 0>
+Off by default, simply undef all elements that return C<length(element) = 0>
 
 =item ->colchar_map
 
