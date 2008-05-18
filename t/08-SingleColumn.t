@@ -15,7 +15,6 @@ my @lines = <$fh>;
 
 my $fw = DataExtract::FixedWidth->new({ heuristic => \@lines });
 
-say $fw->unpack_string;
 foreach my $idx ( 0 .. @lines ) {
 	my $row = $fw->parse( $lines[$idx] );
 	my $col = $row->[0];

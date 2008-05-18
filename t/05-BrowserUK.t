@@ -13,9 +13,7 @@ my $file = File::Spec->catfile( 't', 'data', 'BrowserUK.txt' );
 open ( my $fh, $file ) || die "Can not open $file";
 
 my @lines = <$fh>;
-my $de = DataExtract::FixedWidth->new({
-	heuristic => \@lines
-});
+my $de = DataExtract::FixedWidth->new({ heuristic => \@lines });
 
 foreach my $lineidx ( 1 .. @lines ) {
 	my $line = $lines[$lineidx];

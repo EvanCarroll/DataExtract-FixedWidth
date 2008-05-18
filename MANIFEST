@@ -30,8 +30,10 @@ t/07-Heurisitic_ParseHash.t
 t/08-SingleColumn.t
 t/09-01-pslA.t
 t/09-02-pslA.t
+t/10-Heuristic-woHeader-wCols.t
 t/boilerplate.t
 t/data/BrowserUK.txt
+t/data/Dealermade.txt
 t/data/Fix-Overlay.txt
 t/data/Jhourcle.txt
 t/data/Nulls.txt
