@@ -6,10 +6,13 @@ use warnings;
 use feature ':5.10';
 
 use Test::More tests => 5;
-
+use File::Spec;
 use DataExtract::FixedWidth;
 
-my @lines = <DATA>;
+my $file = File::Spec->catfile( 't', 'data', 'BrowserUK.txt' );
+open ( my $fh, $file ) || die "Can not open $file";
+
+my @lines = <$fh>;
 my $de = DataExtract::FixedWidth->new({
 	heuristic => \@lines
 });
@@ -31,15 +34,3 @@ foreach my $lineidx ( 1 .. @lines ) {
 	}
 
 }
-
-
-__DATA__
-The First One Here Is Longer. Collie SN      262287630  77312    93871  MVP
-A  Second (PART) here         First In 20 MT 169287655  506666   61066  RTD
-3rd Person "Something"        X&Y No SH      564287705  45423    52443  RTE
-The Fourth Person 20          MLP 4000       360505504  3530     72201  VRE
-The Fifth Name OR Something   Twin 200 SH    469505179  3530     72201  VRE
-The Sixth Person OR Item      MLP            260505174  3,530   72,201  VRE
-70 The Seventh Record         MLP            764205122  3530     72201  VRE
-The Eighth Person MLP         MLP            160545154  3530      7220  VRE
-

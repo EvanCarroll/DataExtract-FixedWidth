@@ -1,9 +1,6 @@
 #!/usr/bin/env perl
-## Example from http://en.wikipedia.org/w/index.php?title=Flat_file_database&oldid=209112999
-## Default options with column header name deduction
 use strict;
 use warnings;
-
 use feature ':5.10';
 
 use Test::More tests => 2;

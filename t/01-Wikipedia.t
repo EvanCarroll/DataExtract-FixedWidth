@@ -3,14 +3,18 @@
 ## Default options with column header name deduction
 use strict;
 use warnings;
-
 use feature ':5.10';
+
 
 use Test::More tests => 18;
 use DataExtract::FixedWidth;
+use File::Spec;
+
+my $file = File::Spec->catfile( 't', 'data', 'Wikipedia.txt' );
+open ( my $fh, $file ) || die "Can not open $file";
 
 my $fw;
-while ( my $line = <DATA> ) {
+while ( my $line = <$fh> ) {
 
 	if ( $. == 1 ) {
 		$fw = DataExtract::FixedWidth->new({
@@ -54,15 +58,3 @@ while ( my $line = <DATA> ) {
 	}
 
 }
-
-__DATA__
-id    name    team
-1     Amy     Blues
-2     Bob     Reds
-3     Chuck   Blues
-4     Dick    Blues
-5     Ethel   Reds
-6     Fred    Blues
-7     Gilly   Blues
-8     Hank    Reds
-

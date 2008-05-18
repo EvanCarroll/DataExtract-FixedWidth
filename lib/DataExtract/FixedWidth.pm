@@ -2,7 +2,7 @@ package DataExtract::FixedWidth;
 use Moose;
 use Carp;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub BUILD {
 	my $self = shift;
@@ -36,9 +36,9 @@ has 'colchar_map' => (
 );
 
 has 'header_row' => (
-	isa         => 'Str'
-	, is        => 'rw'
-	, predicate => 'has_header_row'
+	isa          => 'Maybe[Str]'
+	, is         => 'rw'
+	, lazy_build => 1
 );
 
 has 'first_col_zero' => (
@@ -77,18 +77,61 @@ has 'heuristic' => (
 	, is         => 'rw'
 	, predicate  => 'has_heuristic'
 	, auto_deref => 1
+	, trigger    => sub { chomp @{$_[1]} }
 );
+
+has 'skip_header_data' => (
+	isa       => 'Bool'
+	, is      => 'rw'
+	, default => 1
+);
+
+sub _build_header_row {
+	my $self = shift;
+
+	$self->has_heuristic
+		? return ${$self->heuristic}[0]
+		: undef
+	;
+
+}
 
 sub _build_cols {
 	my $self = shift;
-	return [ split ' ', $self->header_row ]
+
+	my @cols;
+
+	## If we have the unpack string and the header_row parse it all out on our own
+	if (
+		( $self->header_row && $self->has_unpack_string )
+		|| ( $self->header_row && $self->has_heuristic )
+	) {
+		my $skd = $self->skip_header_data;
+		$self->skip_header_data( 0 );
+		
+		@cols = @{ $self->parse( $self->header_row ) };
+		
+		$self->skip_header_data( $skd );
+	}
+
+	## We only the header_row
+	elsif ( $self->header_row ) {
+		@cols = split ' ', $self->header_row;
+	}
+
+	else {
+		croak 'Need some method to calculate cols';
+	}
+
+	\@cols;
+
 }
 
 sub _build_colchar_map {
 	my $self = shift;
 
 	croak 'Can not render the map of columns to start-chars without the header_row'
-		unless $self->has_header_row
+		unless defined $self->header_row
 	;
 
 	my $ccm = {};
@@ -131,16 +174,19 @@ sub _build_unpack_string {
 	my $self = shift;
 
 	my @unpack;
-
 	if ( $self->has_heuristic ) {
 		my @lines = $self->heuristic;
 
 		my $mask = ' ' x length $lines[ 0 ];
+
 		$mask |= $_ for @lines;
 
-		push @unpack, 'a' . length($1)
-			while $mask =~ m/(\S+\s*+|$)/g
+		push @unpack, length($1)
+			while $mask =~ m/(\S+\s+|$)/g
 		;
+
+		## Remove last row, (to be replaced with A*)
+		pop @unpack;
 
 	}
 	else {
@@ -149,26 +195,36 @@ sub _build_unpack_string {
 		foreach my $idx ( 0 .. $#startcols ) {
 
 			if ( exists $startcols[$idx+1] ) {
-				push @unpack, 'a' . ( $startcols[$idx+1] - $startcols[$idx] );
-			}
-			else {
-				push @unpack, 'A*'
+				push @unpack, ( $startcols[$idx+1] - $startcols[$idx] );
 			}
 
 		}
 	}
 
+	my $unpack;
+	if ( @unpack ) {
+		$unpack = 'a' . join 'a', @unpack;
+	}
+	$unpack .= 'A*';
 
-	join '', @unpack;
+	$unpack;
 
 }
 
 sub parse {
 	my ( $self, $data ) = @_;
 
+	return undef if !defined $data;
+	
+	chomp $data;
+
+	## skip_header_data
 	return undef
-		unless defined $data
+		if $self->skip_header_data 
+		&& ( defined $self->header_row && $data eq $self->header_row )
 	;
+
+	#printf "\nData:|%s|\tHeader:|%s|", $data, $self->header_row;
 
 	my @cols = unpack ( $self->unpack_string, $data );
 
@@ -190,6 +246,7 @@ sub parse {
 		for ( @cols ) { s/^\s+//; s/\s+$//; }
 	}
 
+	## Swithc nulls to undef
 	if ( $self->null_as_undef ) {
 		croak 'This ->null_as_undef option mandates ->trim_whitespace be true'
 			unless $self->trim_whitespace
@@ -203,14 +260,15 @@ sub parse {
 
 sub parse_hash {
 	my ( $self, $data ) = @_;
+	
+	my $row = $self->parse( $data );
 
-	my @data = @{ $self->parse( $data ) };
 	my $colstarts = $self->sorted_colstart;
 
 	my $results;
-	foreach my $idx ( 0 .. $#data ) {
+	foreach my $idx ( 0 .. $#$row ) {
 		my $col = $self->colchar_map->{ $colstarts->[$idx] };
-		$results->{ $col } = $data[$idx];
+		$results->{ $col } = $row->[$idx];
 	}
 
 	$results;
@@ -241,9 +299,7 @@ DataExtract::FixedWidth - The one stop shop for parsing static column width text
 =head1 SYNOPSIS
 
 	## We assume the columns have no spaces in the header.	
-	my $de = DataExtract::FixedWidth->new({
-		header_row => $header_row
-	});
+	my $de = DataExtract::FixedWidth->new({ header_row => $header_row });
 
 	## We explicitly tell what column names to pick out of the header.
 	my $de = DataExtract::FixedWidth->new({
@@ -251,11 +307,11 @@ DataExtract::FixedWidth - The one stop shop for parsing static column width text
 		cols       => [qw/COL1NAME COL2NAME COL3NAME/, 'COL WITH SPACE IN NAME']
 	});
 
-	## We supply data to heuristically determine header. Here we assume no header.
-	## And C<-E<gt>parse_hash> is not available to you
-	my $de = DataExtract::FixedWidth->new({
-		heuristic => \@datarows
-	});
+	## We supply data to heuristically determine header. Here we assume the first
+	## row is the header (if we need the first row to avoid this possible assumption set
+	## the header_row to undef. And the result of the heurisitic applied to the first row
+	## is the columns
+	my $de = DataExtract::FixedWidth->new({ heuristic => \@datarows });
 
 	$de->parse( $data_row );
 
@@ -263,7 +319,10 @@ DataExtract::FixedWidth - The one stop shop for parsing static column width text
 
 =head1 DESCRIPTION
 
-In the below example, this module can discern the column names from the header. Or, you can supply them explicitly in the constructor; or, you can supply the data rows in an ArrayRef to heuristic and pray for the best luck.
+This module parses any type of fixed width table -- these types of tables are often outputed by ghostscript, printf() displays with string padding (i.e. %-20s %20s etc), and most screen capture mechanisms. This module is using Moose all methods can be specified in the constructor.
+
+
+In the below example, this module can discern the column names from the header. Or, you can supply them explicitly in the constructor; or, you can supply the rows in an ArrayRef to heuristic and pray for the best luck.
 
 	SAMPLE FILE
 	HEADER:  'COL1NAME       COL2NAME       COL3NAMEEEEE'
@@ -275,8 +334,6 @@ After you have constructed, you can C<-E<gt>parse> which will return an ArrayRef
 
 Or, you can use C<-E<gt>parse_hash()> which returns a HashRef of the data indexed by the column header
 
-This module parses any type of fixed width table -- these types of tables are often outputed by ghostscript, printf() displays with string padding (i.e. %-20s %20s etc), and most screen capture mechanisms.
-
 =head2 Constructor
 
 The class constructor -- C<-E<gt>new> -- provides numerious features. Some options it has are:
@@ -285,19 +342,21 @@ The class constructor -- C<-E<gt>new> -- provides numerious features. Some optio
 
 =item heuristics => \@lines
 
-This will deduce the unpack format string from data. If you opt to use this method parse_hash will be unavailble to you.
+This will deduce the unpack format string from data. If you opt to use this method, and need parse_hash, the first row of the heurisitic is assumed to be the header_row. The unpack_string that results for the heuristic is applied to the header_row to determine the columns.
 
 =item cols => \@cols
 
-This will permit you to explicitly list the columns in the header row. This is especially handy if you have spaces in the column header. This option will make the C<header_string> mandatory.
+This will permit you to explicitly list the columns in the header row. This is especially handy if you have spaces in the column header. This option will make the C<header_row> mandatory.
 
-=item header_string => $string
+=item header_row => $string
 
-If a C<cols> option is not provided the assumption is that there are no spaces in the column header. The module can take care of the rest. The only way this column can be avoided is if we deduce the header from heuristics, or if you explicitly supply the unpack string and only use C<-E<gt>parse($line)>
+If a C<cols> option is not provided the assumption is that there are no spaces in the column header. The module can take care of the rest. The only way this column can be avoided is if we deduce the header from heuristics, or if you explicitly supply the unpack string and only use C<-E<gt>parse($line)>. If you are not going to supply a header, and you do not want to waste the first line on a header assumption, set the C<header_row =E<gt> undef> in the constructor.
 
 =back
 
 =head2 Methods
+
+B<An astrisk, (*) in the option means that is the default.>
 
 =over 12
 
@@ -309,28 +368,32 @@ Parses the data and returns an ArrayRef
 
 Parses the data and returns a HashRef, indexed by the I<cols> (headers)
 
-=item ->first_col_zero(1/0)
+=item ->first_col_zero(1*|0)
 
-On by default, this option forces the unpack string to make the first column assume the characters to the left of the header column. So, in the below example the first column also includes the first char of the row, even though the word stock begins at the second character.
+This option forces the unpack string to make the first column assume the characters to the left of the header column. So, in the below example the first column also includes the first char of the row, even though the word stock begins at the second character.
 
 	CHAR NUMBERS: |1|2|3|4|5|6|7|8|9|10
 	HEADER ROW  : | |S|T|O|C|K| |V|I|N
 
-=item ->trim_whitespace(1/0)
+=item ->trim_whitespace(*1|0)
 
-On by default, simply trims the whitespace for the elements that ->parse() outputs
+Trim the whitespace for the elements that ->parse() outputs
 
-=item ->fix_overlay(1/0)
+=item ->fix_overlay(1|0*)
 
-Off by default, fixes columns that bleed into other columns, move over all non-whitespace characters preceding the first whitespace of the next column.
+Fixes columns that bleed into other columns, move over all non-whitespace characters preceding the first whitespace of the next column.
 
 So if ColumnA as is 'foob' and ColumnB is 'ar Hello world'
 
 * ColumnA becomes 'foobar', and ColumnB becomes 'Hello world'
 
-=item ->null_as_undef(1/0)
+=item ->null_as_undef(1|0*)
 
-Off by default, simply undef all elements that return C<length(element) = 0>
+Simply undef all elements that return C<length(element) = 0>, requires C<-E<gt>trim_whitespace>
+
+=item ->skip_header_data(1*|0)
+
+Skips duplicate copies of the header_row if found in the data
 
 =item ->colchar_map
 

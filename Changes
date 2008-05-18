@@ -1,5 +1,10 @@
 Revision history for DataExtract-FixedWidth
 
+0.05    Updated pod
+        New test structure -- sample tests outside of __DATA__ into ./t/data
+        Major updates on heuristic, and header_row/cols assumptions
+        new option ->skip_header_data(*1|0)
+
 0.04    Better pod -- almost a complete overhaul
         Constructor tests
 

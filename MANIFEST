@@ -14,7 +14,8 @@ inc/Module/Install/WriteAll.pm
 lib/DataExtract/FixedWidth.pm
 Makefile
 Makefile.PL
-MANIFEST			This list of files
+MANIFEST
+MANIFEST.bak
 MANIFEST.SKIP
 META.yml
 README
@@ -25,7 +26,19 @@ t/03-Nulls.t
 t/04-Fix-Overlay.t
 t/05-BrowserUK.t
 t/06-BadConstructor.t
-t/06-Jhourcle.nott
+t/07-Heurisitic_ParseHash.t
+t/08-SingleColumn.t
+t/09-01-pslA.t
+t/09-02-pslA.t
 t/boilerplate.t
+t/data/BrowserUK.txt
+t/data/Fix-Overlay.txt
+t/data/Jhourcle.txt
+t/data/Nulls.txt
+t/data/pod-coverage.txt
+t/data/ps-lA.txt
+t/data/RusselAdams-Snap.txt
+t/data/SingleCol.txt
+t/data/Wikipedia.txt
 t/pod-coverage.t
 t/pod.t

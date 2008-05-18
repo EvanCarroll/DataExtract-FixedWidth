@@ -2,14 +2,17 @@
 ## Quick test for fix_overlay
 use strict;
 use warnings;
-
 use feature ':5.10';
 
 use Test::More tests => 3;
+use File::Spec;
 use DataExtract::FixedWidth;
 
-my $fw;
-while ( my $line = <DATA> ) {
+my $file = File::Spec->catfile( 't', 'data', 'Fix-Overlay.txt' );
+open ( my $fh, $file ) || die "Can not open $file";
+
+while ( my $line = <$fh> ) {
+	state $fw;
 
 	if ( $. == 1 ) {
 		$fw = DataExtract::FixedWidth->new({
@@ -32,8 +35,3 @@ while ( my $line = <DATA> ) {
 	}
 
 }
-
-__DATA__
-id    name    team
-1     Amy is foobared She likes the bulls.   
-

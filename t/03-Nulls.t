@@ -1,16 +1,18 @@
 #!/usr/bin/env perl
-## Example from http://en.wikipedia.org/w/index.php?title=Flat_file_database&oldid=209112999
 ## Quick test for null_as_undef
 use strict;
 use warnings;
-
 use feature ':5.10';
 
 use Test::More tests => 12;
+use File::Spec;
 use DataExtract::FixedWidth;
 
-my $fw;
-while ( my $line = <DATA> ) {
+my $file = File::Spec->catfile( 't', 'data', 'Nulls.txt' );
+open ( my $fh, $file ) || die "Can not open $file";
+
+while ( my $line = <$fh> ) {
+	state $fw;
 
 	if ( $. == 1 ) {
 		$fw = DataExtract::FixedWidth->new({
@@ -46,9 +48,3 @@ while ( my $line = <DATA> ) {
 	}
 
 }
-
-__DATA__
-id    name    team
-1     Amy   
-      Amy     Reds
-
