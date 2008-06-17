@@ -2,7 +2,7 @@ package DataExtract::FixedWidth;
 use Moose;
 use Carp;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub BUILD {
 	my $self = shift;
@@ -88,16 +88,21 @@ has 'skip_header_data' => (
 
 sub _heuristic_trigger {
 	my ( $self, $data ) = @_;
-	
+
 	chomp @$data;
+
+	my $maxLength = 0;
+	for ( @$data ) {
+		$maxLength = length if length > $maxLength
+	}
 
 	$self->header_row( $data->[0] )
 		unless $self->has_header_row
 	;
-	
+
 	{
 		my @unpack;
-		my $mask = ' ' x length $data->[0];
+		my $mask = ' ' x $maxLength;
 		$mask |= $_ for @$data;
 
 		push @unpack, length($1)
@@ -149,7 +154,7 @@ sub _build_colchar_map {
 	my $self = shift;
 	my $ccm = {};
 
-	## If we can generate from heurisitic data and don't have a header_row	
+	## If we can generate from heurisitic data and don't have a header_row
 	if (
 		$self->has_header_row
 		&& !defined $self->header_row
@@ -165,7 +170,7 @@ sub _build_colchar_map {
 	## Generate from header_row
 	else {
 		croak 'Can not render the map of columns to start-chars without the header_row'
-			unless defined $self->has_header_row 
+			unless defined $self->has_header_row
 		;
 
 		foreach my $col ( $self->cols ) {
@@ -329,13 +334,13 @@ DataExtract::FixedWidth - The one stop shop for parsing static column width text
 
 	## We assume the columns have no spaces in the header.
 	my $de = DataExtract::FixedWidth->new({ header_row => $header_row });
-
+	
 	## We explicitly tell what column names to pick out of the header.
 	my $de = DataExtract::FixedWidth->new({
 		header_row => $header_row
 		cols       => [qw/COL1NAME COL2NAME COL3NAME/, 'COL WITH SPACE IN NAME']
 	});
-
+	
 	## We supply data to heuristic and assume
 	## * first row is the header (to avoid this assumption
 	##   set the header_row to undef. )
@@ -368,9 +373,9 @@ DataExtract::FixedWidth - The one stop shop for parsing static column width text
 		unpack_string => $template
 		, header_row  => $header_row
 	});
-
+	
 	$de->parse( $data_row );
-
+	
 	$de->parse_hash( $data_row );
 
 =head1 DESCRIPTION

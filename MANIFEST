@@ -14,8 +14,7 @@ inc/Module/Install/WriteAll.pm
 lib/DataExtract/FixedWidth.pm
 Makefile
 Makefile.PL
-MANIFEST
-MANIFEST.bak
+MANIFEST			This list of files
 MANIFEST.SKIP
 META.yml
 README
@@ -31,11 +30,13 @@ t/08-SingleColumn.t
 t/09-01-pslA.t
 t/09-02-pslA.t
 t/10-Heuristic-woHeader-wCols.t
+t/11-Heuristic-ShortFirstRow.t
 t/boilerplate.t
 t/data/BrowserUK.txt
 t/data/Dealermade.txt
 t/data/Fix-Overlay.txt
 t/data/Jhourcle.txt
+t/data/larochenew.TXT
 t/data/Nulls.txt
 t/data/pod-coverage.txt
 t/data/ps-lA.txt

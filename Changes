@@ -1,5 +1,8 @@
 Revision history for DataExtract-FixedWidth
 
+0.07    Bug fix: No longer have to have the first row the longest when
+        using euristic test provided t/11
+
 0.06    Lots of internet rewrites
         Accept heuristic with undef header and supplied columns
         New tests
