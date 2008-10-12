@@ -6,7 +6,7 @@ use feature ':5.10';
 ##
 ## In version .06 this test failed
 ## I got the longer a19a9a14a13a5A* instead of a19a9a14a13A*
-## This was because the length for the euristic was set statically to the
+## This was because the length for the heuristic was set statically to the
 ## first row rather than the longest row
 ##
 

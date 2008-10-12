@@ -31,12 +31,14 @@ t/09-01-pslA.t
 t/09-02-pslA.t
 t/10-Heuristic-woHeader-wCols.t
 t/11-Heuristic-ShortFirstRow.t
+t/12-Null.t
 t/boilerplate.t
 t/data/BrowserUK.txt
 t/data/Dealermade.txt
 t/data/Fix-Overlay.txt
 t/data/Jhourcle.txt
 t/data/larochenew.TXT
+t/data/NullFirstRow.txt
 t/data/Nulls.txt
 t/data/pod-coverage.txt
 t/data/ps-lA.txt

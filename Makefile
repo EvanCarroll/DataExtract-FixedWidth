@@ -1,7 +1,7 @@
 # This Makefile is for the DataExtract::FixedWidth extension to perl.
 #
 # It was generated automatically by MakeMaker version
-# 6.42 (Revision: 41145) from the contents of
+# 6.44 (Revision: 54639) from the contents of
 # Makefile.PL. Don't edit this file, edit Makefile.PL instead.
 #
 #       ANY CHANGES MADE HERE WILL BE LOST!
@@ -17,19 +17,19 @@
 #     NAME => q[DataExtract::FixedWidth]
 #     NO_META => q[1]
 #     PL_FILES => {  }
-#     PREREQ_PM => { Test::More=>q[0], ExtUtils::MakeMaker=>q[6.42], Moose=>q[0] }
-#     VERSION => q[0.07]
+#     PREREQ_PM => { Test::More=>q[0], ExtUtils::MakeMaker=>q[6.44], Moose=>q[0.58] }
+#     VERSION => q[0.08]
+#     clean => { FILES=>q[META.yml] }
 #     dist => { PREOP=>q[$(PERL) -I. "-MModule::Install::Admin" -e "dist_preop(q($(DISTVNAME)))"] }
-#     test => { TESTS=>q[t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/06-BadConstructor.t t/07-Heurisitic_ParseHash.t t/08-SingleColumn.t t/09-01-pslA.t t/09-02-pslA.t t/10-Heuristic-woHeader-wCols.t t/11-Heuristic-ShortFirstRow.t t/boilerplate.t t/pod-coverage.t t/pod.t] }
+#     test => { TESTS=>q[t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/06-BadConstructor.t t/07-Heurisitic_ParseHash.t t/08-SingleColumn.t t/09-01-pslA.t t/09-02-pslA.t t/10-Heuristic-woHeader-wCols.t t/11-Heuristic-ShortFirstRow.t t/12-Null.t t/boilerplate.t t/pod-coverage.t t/pod.t] }
 
 # --- MakeMaker post_initialize section:
 
 
 # --- MakeMaker const_config section:
 
-# These definitions are from config.sh (via /usr/local/lib/perl5/5.10.0/i686-linux-thread-multi-ld/Config.pm)
-
-# They may have been overridden via Makefile.PL or on the command line
+# These definitions are from config.sh (via /usr/local/lib/perl5/5.10.0/i686-linux-thread-multi-ld/Config.pm).
+# They may have been overridden via Makefile.PL or on the command line.
 AR = ar
 CC = cc
 CCCDLFLAGS = -fPIC
@@ -60,11 +60,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = DataExtract::FixedWidth
 NAME_SYM = DataExtract_FixedWidth
-VERSION = 0.07
+VERSION = 0.08
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_07
+VERSION_SYM = 0_08
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.07
+XS_VERSION = 0.08
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -139,8 +139,8 @@ PERM_RW = 644
 PERM_RWX = 755
 
 MAKEMAKER   = /usr/local/lib/perl5/5.10.0/ExtUtils/MakeMaker.pm
-MM_VERSION  = 6.42
-MM_REVISION = 41145
+MM_VERSION  = 6.44
+MM_REVISION = 54639
 
 # FULLEXT = Pathname for extension directory (eg Foo/Bar/Oracle).
 # BASEEXT = Basename part of FULLEXT. May be just equal FULLEXT. (eg Oracle)
@@ -192,7 +192,7 @@ PM_TO_BLIB = lib/DataExtract/FixedWidth.pm \
 
 
 # --- MakeMaker platform_constants section:
-MM_Unix_VERSION = 6.42
+MM_Unix_VERSION = 6.44
 PERL_MALLOC_DEF = -DPERL_EXTMALLOC_DEF -Dmalloc=Perl_malloc -Dfree=Perl_mfree -Drealloc=Perl_realloc -Dcalloc=Perl_calloc
 
 
@@ -255,7 +255,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = DataExtract-FixedWidth
-DISTVNAME = DataExtract-FixedWidth-0.07
+DISTVNAME = DataExtract-FixedWidth-0.08
 
 
 # --- MakeMaker macro section:
@@ -453,7 +453,7 @@ clean :: clean_subdirs
 	  perl.exe so_locations \
 	  $(BASEEXT).exp 
 	- $(RM_RF) \
-	  blib 
+	  META.yml blib 
 	- $(MV) $(FIRST_MAKEFILE) $(MAKEFILE_OLD) $(DEV_NULL)
 
 
@@ -737,7 +737,7 @@ $(MAKE_APERL_FILE) : $(FIRST_MAKEFILE) pm_to_blib
 TEST_VERBOSE=0
 TEST_TYPE=test_$(LINKTYPE)
 TEST_FILE = test.pl
-TEST_FILES = t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/06-BadConstructor.t t/07-Heurisitic_ParseHash.t t/08-SingleColumn.t t/09-01-pslA.t t/09-02-pslA.t t/10-Heuristic-woHeader-wCols.t t/11-Heuristic-ShortFirstRow.t t/boilerplate.t t/pod-coverage.t t/pod.t
+TEST_FILES = t/00-load.t t/01-Wikipedia.t t/02-RusselAdams-Snap.t t/03-Nulls.t t/04-Fix-Overlay.t t/05-BrowserUK.t t/06-BadConstructor.t t/07-Heurisitic_ParseHash.t t/08-SingleColumn.t t/09-01-pslA.t t/09-02-pslA.t t/10-Heuristic-woHeader-wCols.t t/11-Heuristic-ShortFirstRow.t t/12-Null.t t/boilerplate.t t/pod-coverage.t t/pod.t
 TESTDB_SW = -d
 
 testdb :: testdb_$(LINKTYPE)
@@ -763,13 +763,13 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,07,0,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,08,0,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT>The one stop shop for parsing static column width text tables!</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Evan &lt;me@evancarroll.com&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="ExtUtils-MakeMaker" VERSION="6,42,0,0" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Moose" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="ExtUtils-MakeMaker" VERSION="6,44,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Moose" VERSION="0,58,0,0" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <DEPENDENCY NAME="Test-More" VERSION="0,0,0,0" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <OS NAME="$(OSNAME)" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="i686-linux-thread-multi-ld-5.1" />' >> $(DISTNAME).ppd
@@ -793,7 +793,7 @@ pm_to_blib : $(TO_INST_PM)
 
 
 # End.
-# Postamble by Module::Install 0.75
+# Postamble by Module::Install 0.77
 # --- Module::Install::Admin::Makefile section:
 
 realclean purge ::

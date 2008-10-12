@@ -1,5 +1,11 @@
 Revision history for DataExtract-FixedWidth
 
+0.08    Added verbose option for constructor, helps out a we' bit
+        Bug fix: long standing error on trailing spaces with empty cols generated.
+				  no longer generated. Added Tests
+        minor optimization
+        reenabled immutable
+
 0.07    Bug fix: No longer have to have the first row the longest when
         using euristic test provided t/11
 

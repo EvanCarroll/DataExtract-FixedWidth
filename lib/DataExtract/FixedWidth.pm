@@ -2,7 +2,7 @@ package DataExtract::FixedWidth;
 use Moose;
 use Carp;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 sub BUILD {
 	my $self = shift;
@@ -86,6 +86,8 @@ has 'skip_header_data' => (
 	, default => 1
 );
 
+has 'verbose' => ( isa => 'Bool', 'is' => 'ro', default => 0 );
+
 sub _heuristic_trigger {
 	my ( $self, $data ) = @_;
 
@@ -105,12 +107,12 @@ sub _heuristic_trigger {
 		my $mask = ' ' x $maxLength;
 		$mask |= $_ for @$data;
 
+		## The (?=\S) fixes a bug that creates null columns in the event any
+		## one column has trailing whitespace (because you'll have '\S\s  '
+		## this was a bug revealed in the dataset NullFirstRow.txt
 		push @unpack, length($1)
-			while $mask =~ m/(\S+\s+|$)/g
+			while $mask =~ m/(\S+\s+(?=\S))/g
 		;
-
-		## Remove last row, (to be replaced with A*)
-		pop @unpack;
 
 		$self->unpack_string( $self->_helper_unpack( \@unpack ) );
 	}
@@ -251,10 +253,13 @@ sub parse {
 	chomp $data;
 
 	## skip_header_data
-	return undef
-		if $self->skip_header_data
+	if (
+		$self->skip_header_data
 		&& ( defined $self->header_row && $data eq $self->header_row )
-	;
+	) {
+		warn "Skipping duplicate header row\n" if $self->verbose;
+		return undef
+	}
 
 	#printf "\nData:|%s|\tHeader:|%s|", $data, $self->header_row;
 
@@ -321,6 +326,7 @@ sub _build_sorted_colstart {
 }
 
 no Moose;
+__PACKAGE__->meta->make_immutable;
 
 1;
 
@@ -412,6 +418,10 @@ This will permit you to explicitly list the columns in the header row. This is e
 
 If a C<cols> option is not provided the assumption is that there are no spaces in the column header. The module can take care of the rest. The only way this column can be avoided is if we deduce the header from heuristics, or if you explicitly supply the unpack string and only use C<-E<gt>parse($line)>. If you are not going to supply a header, and you do not want to waste the first line on a header assumption, set the C<header_row =E<gt> undef> in the constructor.
 
+=item verbose => 1|0
+
+Right now, it simply display's warnings when it does something that might at first seem awkward. Like returning undef when it encouters a duplicate copy of a header row.
+
 =back
 
 =head2 Methods
@@ -468,6 +478,8 @@ Returns the C<CORE::unpack()> template string that will be used internally by C<
 =head1 AVAILABILITY
 
 CPAN.org
+
+Git repo at L<http://repo.or.cz/w/DataExtract-FixedWidth.git>
 
 =head1 COPYRIGHT & LICENSE
 
