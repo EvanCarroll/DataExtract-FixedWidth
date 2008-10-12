@@ -32,6 +32,7 @@ t/09-02-pslA.t
 t/10-Heuristic-woHeader-wCols.t
 t/11-Heuristic-ShortFirstRow.t
 t/12-Null.t
+t/13-RightAlignFirstCol.t
 t/boilerplate.t
 t/data/BrowserUK.txt
 t/data/Dealermade.txt
@@ -42,6 +43,7 @@ t/data/NullFirstRow.txt
 t/data/Nulls.txt
 t/data/pod-coverage.txt
 t/data/ps-lA.txt
+t/data/RightAlign1Col.txt
 t/data/RusselAdams-Snap.txt
 t/data/SingleCol.txt
 t/data/Wikipedia.txt

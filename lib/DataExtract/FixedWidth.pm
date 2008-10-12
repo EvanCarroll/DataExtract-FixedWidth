@@ -2,7 +2,7 @@ package DataExtract::FixedWidth;
 use Moose;
 use Carp;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 sub BUILD {
 	my $self = shift;
@@ -110,8 +110,12 @@ sub _heuristic_trigger {
 		## The (?=\S) fixes a bug that creates null columns in the event any
 		## one column has trailing whitespace (because you'll have '\S\s  '
 		## this was a bug revealed in the dataset NullFirstRow.txt
+		#
+		## the ^\s+ makes it so that right alligned tables
+		## spaces on the left of the first non-whitespace character in
+		## the first col work
 		push @unpack, length($1)
-			while $mask =~ m/(\S+\s+(?=\S))/g
+			while $mask =~ m/((?:^\s+)?\S+\s+(?=\S))/g
 		;
 
 		$self->unpack_string( $self->_helper_unpack( \@unpack ) );
